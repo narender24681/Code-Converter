@@ -1,15 +1,18 @@
 import React, { useState } from "react";
 import MonacoEditor from "react-monaco-editor";
 import axios from "axios";
-
 import "./App.css";
+
+// const backendUrl = `http://localhost:8080`;
+const backendUrl = `https://code-converter-api-ogfb.onrender.com`;
 
 function App() {
   const [code, setCode] = useState("");
   const [language, setLanguage] = useState("JavaScript");
   const [output, setOutput] = useState("");
   const [error, setError] = useState(null);
-  console.log(output);
+  const [isLoading, setIsLoading] = useState(false);
+  // console.log(output);
 
   const handleLanguageChange = (e) => {
     setLanguage(e.target.value);
@@ -18,37 +21,46 @@ function App() {
   const handleConvert = async () => {
     try {
       setError(null);
-      const response = await axios.post("http://localhost:8080/api/convert", {
+      setIsLoading(true);
+      const response = await axios.post(`${backendUrl}/api/convert`, {
         code,
         language,
       });
       setOutput(response.data.result);
     } catch (error) {
       setError("Error converting code. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleDebug = async () => {
     try {
       setError(null);
-      const response = await axios.post("http://localhost:8080/api/debug", {
+      setIsLoading(true);
+      const response = await axios.post(`${backendUrl}/api/debug`, {
         code,
       });
       setOutput(response.data.debuggedCode);
     } catch (error) {
       setError("Error debugging code. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleQuality = async () => {
     try {
       setError(null);
-      const response = await axios.post("http://localhost:8080/api/quality", {
+      setIsLoading(true);
+      const response = await axios.post(`${backendUrl}/api/quality`, {
         code,
       });
       setOutput(response.data.qualitySummary);
     } catch (error) {
       setError("Error getting code quality summary. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -77,6 +89,7 @@ function App() {
           </div>
         </div>
       </div>
+      {isLoading && <div className="loading-message">Loading...</div>}
       {error && <div className="error-message">{error}</div>}
       <div className="editor-container">
         <div className="editor">
